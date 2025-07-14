@@ -8,6 +8,10 @@ export class CanvasPage extends BasePage {
 		return this.page.getByRole('button', { name: 'Save' });
 	}
 
+	workflowSaveButton(): Locator {
+		return this.page.getByTestId('workflow-save-button');
+	}
+
 	canvasAddButton(): Locator {
 		return this.page.getByTestId('canvas-add-button');
 	}
@@ -132,7 +136,6 @@ export class CanvasPage extends BasePage {
 	async clickExecutionsTab(): Promise<void> {
 		await this.page.getByRole('radio', { name: 'Executions' }).click();
 	}
-
 	async setWorkflowName(name: string): Promise<void> {
 		await this.clickByTestId('inline-edit-preview');
 		await this.fillByTestId('inline-edit-input', name);
@@ -161,7 +164,6 @@ export class CanvasPage extends BasePage {
 	getWorkflowTags() {
 		return this.page.getByTestId('workflow-tags').locator('.el-tag');
 	}
-
 	async activateWorkflow() {
 		const responsePromise = this.page.waitForResponse(
 			(response) =>
@@ -169,5 +171,16 @@ export class CanvasPage extends BasePage {
 		);
 		await this.page.getByTestId('workflow-activate-switch').click();
 		await responsePromise;
+	}
+
+	async clickZoomToFitButton(): Promise<void> {
+		await this.clickByTestId('zoom-to-fit');
+	}
+
+	/**
+	 * Get node issues for a specific node
+	 */
+	getNodeIssuesByName(nodeName: string) {
+		return this.nodeByName(nodeName).getByTestId('node-issues');
 	}
 }

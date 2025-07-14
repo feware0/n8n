@@ -1,0 +1,92 @@
+---
+description: Cypress to Playwright migration workflow and best practices
+globs:
+  - 'packages/testing/playwright/**/**/*.spec.ts'
+  - 'cypress/e2e/**/*.cy.ts'
+alwaysApply: false
+---
+
+# Cypress to Playwright Migration Workflow
+
+## CRITICAL: Follow packages/testing/playwright/CONTRIBUTING.md
+
+All migrated tests MUST follow the patterns in CONTRIBUTING.md for test structure, naming conventions, and best practices.
+
+## Migration Workflow - FOLLOW THIS ORDER
+
+### Step 1: Analyze What to Migrate
+
+```bash
+# Select target Cypress file
+TARGET_FILE="cypress/e2e/[feature].cy.ts"
+
+# Extract all test cases
+echo "=== Tests to Migrate ===" > migration-plan.md
+grep -n "it(\|it\.skip(\|describe(" $TARGET_FILE >> migration-plan.md
+
+# Check for test utilities/helpers used
+grep -r "import.*from" $TARGET_FILE
+```
+
+### Step 2: Scaffold ALL Tests First
+
+Create test structure with ALL tests scaffolded before implementing any:
+
+```typescript
+import { test, expect } from '../fixtures/base';
+
+test.describe('Feature Name', () => {
+	test.beforeEach(async ({ n8n }) => {
+		await n8n.goHome();
+	});
+
+	// SCAFFOLD ALL TESTS WITH COMMENTS FIRST
+	test('should create item', async ({ n8n }) => {
+		// TODO: Implement from cypress/e2e/[file].cy.ts:15
+		// Original: Creates new item and verifies success message
+	});
+});
+```
+
+### Step 3: Review Coverage
+
+Create migration-review.md to ensure nothing is missed:
+
+- All Cypress tests have been scaffolded
+- Test names match original intent
+- Dependencies identified (fixtures, helpers)
+- Any overlap or consolidation opportunities
+
+### Step 4: Research Before Implementation
+
+For EACH test, research existing patterns FIRST:
+
+```bash
+grep -r "methodName" packages/testing/playwright/pages/
+grep -r "feature" packages/testing/playwright/composables/
+grep -r "similar-pattern" packages/testing/playwright/tests/
+```
+
+### Step 5: Implement ONE Test at a Time
+
+Start with simplest test, verify it works completely before moving to next.
+
+### Step 6: Test with Line Reporter
+
+```bash
+pnpm test:standard --grep "test name" --reporter=line
+```
+
+### Step 7: Copy Required Fixtures
+
+```bash
+cp cypress/fixtures/[workflow].json packages/testing/playwright/workflows/
+```
+
+### Step 8: Final Coverage Verification
+
+Compare test counts and names to ensure complete migration.
+
+## Rule: One File at a Time
+
+NEVER attempt to migrate multiple test files simultaneously. Complete ONE file entirely before starting another.

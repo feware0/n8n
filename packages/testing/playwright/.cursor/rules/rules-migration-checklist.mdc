@@ -1,0 +1,95 @@
+---
+description: Comprehensive checklist for Cypress to Playwright migration
+globs:
+  - 'packages/testing/playwright/tests/**/*.spec.ts'
+alwaysApply: false
+---
+
+# Migration Checklist
+
+## Pre-Migration Requirements
+
+- [ ] Playwright MCP is available
+- [ ] Can run isolated n8n instance
+- [ ] Read packages/testing/playwright/CONTRIBUTING.md
+- [ ] Selected ONE Cypress file to migrate
+
+## Migration Process Checklist
+
+### 1. Analysis Phase
+
+- [ ] Extracted all test cases from Cypress file
+- [ ] Identified all imports and dependencies
+- [ ] Checked for fixture files used
+- [ ] Verified not already migrated
+
+### 2. Scaffolding Phase
+
+- [ ] Created Playwright test file with correct name
+- [ ] Scaffolded ALL tests with TODO comments
+- [ ] Added descriptive comments for each test
+- [ ] Included proper imports
+
+### 3. Research Phase
+
+- [ ] Searched for existing page object methods
+- [ ] Checked composables for business logic
+- [ ] Looked at similar working tests
+- [ ] Identified Cypress helpers that need porting
+
+### 4. Implementation Phase
+
+- [ ] Implementing one test at a time
+- [ ] Using line reporter for testing
+- [ ] Debugging with Playwright MCP when needed
+- [ ] Re-reading Cypress test when stuck
+
+### 5. Fixture Phase
+
+- [ ] Copied all required workflow files
+- [ ] Verified fixtures are in correct directory
+- [ ] Updated any file paths in tests
+
+### 6. Verification Phase
+
+- [ ] All tests from Cypress file are migrated
+- [ ] Test count matches original
+- [ ] All tests are passing
+- [ ] No .skip() or TODO comments remain
+
+## Quality Checklist
+
+### Code Quality
+
+- [ ] Using existing page methods (not custom selectors)
+- [ ] Following patterns from CONTRIBUTING.md
+- [ ] Proper error messages in assertions
+- [ ] No hardcoded waits
+
+### Best Practices
+
+- [ ] Tests are independent and can run in isolation
+- [ ] Using correct node names (with suffixes)
+- [ ] Correct execution context (NDV vs Canvas)
+- [ ] Authentication handled with tags
+
+### Documentation
+
+- [ ] Any new utilities are documented
+- [ ] Complex logic has comments
+- [ ] Migration notes added if needed
+
+## Common Pitfalls Avoided
+
+- [ ] Not using display names for nodes
+- [ ] Not executing from wrong context
+- [ ] Not missing workflow fixtures
+- [ ] Not using wrong test IDs
+- [ ] Not migrating multiple files at once
+
+## Final Sign-off
+
+- [ ] Entire test file runs successfully
+- [ ] Coverage matches original Cypress tests
+- [ ] Code follows n8n Playwright standards
+- [ ] Ready to commit

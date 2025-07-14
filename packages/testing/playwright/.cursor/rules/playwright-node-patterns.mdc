@@ -1,0 +1,62 @@
+---
+description: Node naming patterns and execution context for n8n Playwright tests
+alwaysApply: false
+---
+
+# Node Patterns and Execution Context
+
+## Node Names - CRITICAL DIFFERENCES
+
+Playwright uses full node names, not display names:
+
+```typescript
+// ❌ WRONG (Cypress display names)
+'Edit Fields'
+'Loop Over Items'
+'Send Email'
+'Manual Trigger'
+
+// ✅ CORRECT (Playwright full names)
+'Edit Fields (Set)'
+'Loop Over Items (Split in Batches)'
+'Send Email (SMTP)'
+'When clicking 'Test workflow''
+```
+
+## Execution Context Awareness
+
+### Canvas vs NDV Execution
+
+```typescript
+// ❌ WRONG: Canvas execution for node testing
+await n8n.canvas.clickExecuteWorkflowButton();
+
+// ✅ CORRECT: NDV execution for node testing
+await n8n.ndv.execute();
+```
+
+### When to Use Each
+
+- **Canvas execution**: Full workflow runs
+- **NDV execution**: Individual node testing
+- **Always check original Cypress test** for correct context
+
+## Debug Node Names
+
+When node names fail, create debug test:
+
+```typescript
+test.only('debug node names', async ({ n8n }) => {
+	await n8n.goHome();
+	await n8n.workflows.clickAddWorkflowButton();
+	await n8n.canvas.clickNodeCreatorPlusButton();
+	await n8n.page.pause(); // Use Playwright MCP to inspect
+});
+```
+
+## Common Node Name Patterns
+
+- Triggers often have descriptive names: "When clicking 'Test workflow'"
+- Transform nodes have suffixes: "(Set)", "(Split in Batches)"
+- Integration nodes have protocols: "(SMTP)", "(REST)"
+- Always verify exact names with MCP before implementing

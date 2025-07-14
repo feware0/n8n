@@ -1,11 +1,13 @@
 import type { Page } from '@playwright/test';
 
+import { AIAssistantPage } from './AIAssistantPage';
 import { CanvasPage } from './CanvasPage';
 import { CredentialsPage } from './CredentialsPage';
 import { ExecutionsPage } from './ExecutionsPage';
 import { NodeDisplayViewPage } from './NodeDisplayViewPage';
 import { NotificationsPage } from './NotificationsPage';
 import { ProjectSettingsPage } from './ProjectSettingsPage';
+import { SettingsPage } from './SettingsPage';
 import { SidebarPage } from './SidebarPage';
 import { WorkflowSharingModal } from './WorkflowSharingModal';
 import { WorkflowsPage } from './WorkflowsPage';
@@ -18,9 +20,11 @@ export class n8nPage {
 	readonly page: Page;
 
 	// Pages
+	readonly aiAssistant: AIAssistantPage;
 	readonly canvas: CanvasPage;
 	readonly ndv: NodeDisplayViewPage;
 	readonly projectSettings: ProjectSettingsPage;
+	readonly settings: SettingsPage;
 	readonly workflows: WorkflowsPage;
 	readonly notifications: NotificationsPage;
 	readonly credentials: CredentialsPage;
@@ -37,9 +41,11 @@ export class n8nPage {
 		this.page = page;
 
 		// Pages
+		this.aiAssistant = new AIAssistantPage(page);
 		this.canvas = new CanvasPage(page);
 		this.ndv = new NodeDisplayViewPage(page);
 		this.projectSettings = new ProjectSettingsPage(page);
+		this.settings = new SettingsPage(page);
 		this.workflows = new WorkflowsPage(page);
 		this.notifications = new NotificationsPage(page);
 		this.credentials = new CredentialsPage(page);

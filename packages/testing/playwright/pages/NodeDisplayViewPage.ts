@@ -1,4 +1,5 @@
 import { BasePage } from './BasePage';
+import { expect } from '@playwright/test';
 
 export class NodeDisplayViewPage extends BasePage {
 	async clickBackToCanvasButton() {
@@ -34,5 +35,35 @@ export class NodeDisplayViewPage extends BasePage {
 
 	async close() {
 		await this.clickBackToCanvasButton();
+	}
+
+	/**
+	 * Execute the current node in the NDV
+	 */
+	async execute() {
+		await this.clickByTestId('node-execute-button');
+	}
+
+	/**
+	 * Get the output panel locator
+	 */
+	getOutputPanel() {
+		return this.page.getByTestId('output-panel');
+	}
+
+	/**
+	 * Assert that inline expression is valid (has valid resolvable class)
+	 */
+	async assertInlineExpressionValid() {
+		await expect(
+			this.page.getByTestId('inline-expression-editor-input').locator('.cm-valid-resolvable'),
+		).toBeVisible();
+	}
+
+	/**
+	 * Get the parameter expression preview value
+	 */
+	getParameterExpressionPreviewValue() {
+		return this.page.getByTestId('parameter-expression-preview-value');
 	}
 }
