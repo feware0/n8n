@@ -28,6 +28,7 @@
     "eslint-plugin-playwright": "2.2.2",
     "generate-schema": "2.6.0",
     "n8n-containers": "workspace:*",
-    "tsx": "catalog:"
+    "tsx": "catalog:",
+    "nanoid": "catalog:"
   }
 }

@@ -1,4 +1,5 @@
 import type { Locator } from '@playwright/test';
+import { nanoid } from 'nanoid';
 
 import { BasePage } from './BasePage';
 import { resolveFromRoot } from '../utils/path-helper';
@@ -182,5 +183,35 @@ export class CanvasPage extends BasePage {
 	 */
 	getNodeIssuesByName(nodeName: string) {
 		return this.nodeByName(nodeName).getByTestId('node-issues');
+	}
+
+	/**
+	 * Add tags to the workflow
+	 * @param count - The number of tags to add
+	 * @returns An array of tag names
+	 */
+	async addTags(count: number = 1): Promise<string[]> {
+		const tags: string[] = [];
+
+		for (let i = 0; i < count; i++) {
+			const tag = `tag-${nanoid(8)}-${i}`;
+			tags.push(tag);
+
+			if (i === 0) {
+				await this.clickByText('Add tag');
+			} else {
+				await this.page
+					.getByTestId('tags-dropdown')
+					.getByText(tags[i - 1])
+					.click();
+			}
+
+			await this.page.getByRole('combobox').first().fill(tag);
+			await this.page.getByRole('combobox').first().press('Enter');
+		}
+
+		await this.page.click('body');
+
+		return tags;
 	}
 }

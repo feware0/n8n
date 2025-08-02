@@ -1,5 +1,6 @@
-import { BasePage } from './BasePage';
 import { expect } from '@playwright/test';
+
+import { BasePage } from './BasePage';
 
 export class NodeDisplayViewPage extends BasePage {
 	async clickBackToCanvasButton() {
@@ -65,5 +66,19 @@ export class NodeDisplayViewPage extends BasePage {
 	 */
 	getParameterExpressionPreviewValue() {
 		return this.page.getByTestId('parameter-expression-preview-value');
+	}
+
+	/**
+	 * Get output table rows
+	 */
+	getOutputTableRows() {
+		return this.getOutputPanel().getByTestId('ndv-data-container').locator('table tr');
+	}
+
+	/**
+	 * Get a specific output table row by index
+	 */
+	getOutputTableRow(row: number) {
+		return this.getOutputTableRows().nth(row);
 	}
 }

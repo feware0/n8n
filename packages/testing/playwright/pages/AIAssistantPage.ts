@@ -1,5 +1,4 @@
 import { BasePage } from './BasePage';
-import { expect } from '@playwright/test';
 
 export class AIAssistantPage extends BasePage {
 	/**

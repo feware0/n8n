@@ -1,5 +1,6 @@
-import { test, expect } from '../../fixtures/base';
 import { nanoid } from 'nanoid';
+
+import { test, expect } from '../../fixtures/base';
 
 test.describe('AI Assistant::disabled', () => {
 	test.beforeEach(async ({ n8n, api }) => {
@@ -49,7 +50,7 @@ test.describe('AI Assistant::enabled', () => {
 		await n8n.aiAssistant.getCloseChatButton().click();
 
 		// Verify chat is no longer visible
-		await expect(n8n.aiAssistant.getAskAssistantChat()).not.toBeVisible();
+		await expect(n8n.aiAssistant.getAskAssistantChat()).toBeHidden();
 	});
 
 	test('should show resizer when chat is open', async ({ n8n }) => {
@@ -105,8 +106,8 @@ test.describe('AI Assistant::enabled', () => {
 		// Click the assistant button in the error view
 		await n8n.aiAssistant.getNodeErrorViewAssistantButton().click();
 
-		// Wait a bit for the response to be processed
-		await n8n.page.waitForTimeout(1000);
+		// Wait for the chat message to appear (more reliable than waiting for API response)
+		await expect(n8n.aiAssistant.getChatMessagesAll()).toHaveCount(1);
 
 		// Verify we have one chat message
 		await expect(n8n.aiAssistant.getChatMessagesAll()).toHaveCount(1);
@@ -165,8 +166,8 @@ test.describe('AI Assistant::enabled', () => {
 		// Click send button
 		await n8n.aiAssistant.getSendMessageButton().click();
 
-		// Wait for the response to be processed
-		await n8n.page.waitForTimeout(1000);
+		// Wait for the user message to appear
+		await expect(n8n.aiAssistant.getChatMessagesUser()).toHaveCount(1);
 
 		// Verify user message was sent
 		await expect(n8n.aiAssistant.getChatMessagesUser()).toHaveCount(1);
@@ -217,8 +218,8 @@ test.describe('AI Assistant::enabled', () => {
 		// Click the assistant button in the error view
 		await n8n.aiAssistant.getNodeErrorViewAssistantButton().click();
 
-		// Wait for the response to be processed
-		await n8n.page.waitForTimeout(1000);
+		// Wait for the quick reply buttons to appear
+		await expect(n8n.aiAssistant.getQuickReplyButtons()).toHaveCount(2);
 
 		// Verify we have 2 quick reply buttons
 		await expect(n8n.aiAssistant.getQuickReplyButtons()).toHaveCount(2);
@@ -226,8 +227,8 @@ test.describe('AI Assistant::enabled', () => {
 		// Click the first quick reply button
 		await n8n.aiAssistant.getQuickReplyButtons().first().click();
 
-		// Wait for the response to be processed
-		await n8n.page.waitForTimeout(1000);
+		// Wait for the user message to appear
+		await expect(n8n.aiAssistant.getChatMessagesUser()).toHaveCount(1);
 
 		// Verify user message was sent
 		await expect(n8n.aiAssistant.getChatMessagesUser()).toHaveCount(1);
@@ -268,8 +269,8 @@ test.describe('AI Assistant::enabled', () => {
 		// Click the assistant button in the error view
 		await n8n.aiAssistant.getNodeErrorViewAssistantButton().click();
 
-		// Wait for the response to be processed
-		await n8n.page.waitForTimeout(1000);
+		// Wait for the chat message to appear
+		await expect(n8n.aiAssistant.getChatMessagesAll()).toHaveCount(1);
 
 		// Close the chat
 		await n8n.aiAssistant.getCloseChatButton().click();
@@ -295,8 +296,8 @@ test.describe('AI Assistant::enabled', () => {
 			.getByRole('button', { name: 'Start new session' })
 			.click();
 
-		// Wait for the response to be processed
-		await n8n.page.waitForTimeout(1000);
+		// Wait for the new session to start with initial assistant message
+		await expect(n8n.aiAssistant.getChatMessagesAll()).toHaveCount(1);
 
 		// New session should start with initial assistant message
 		await expect(n8n.aiAssistant.getChatMessagesAll()).toHaveCount(1);
@@ -340,8 +341,8 @@ test.describe('AI Assistant::enabled', () => {
 		// Click the assistant button in the error view
 		await n8n.aiAssistant.getNodeErrorViewAssistantButton().click();
 
-		// Wait for the response to be processed
-		await n8n.page.waitForTimeout(1000);
+		// Wait for the system message about session ending to appear
+		await expect(n8n.aiAssistant.getChatMessagesSystem()).toHaveCount(1);
 
 		// Verify we have one system message about session ending
 		await expect(n8n.aiAssistant.getChatMessagesSystem()).toHaveCount(1);

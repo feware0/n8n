@@ -1,4 +1,5 @@
 import { test, expect } from '../../fixtures/base';
+import { nanoid } from 'nanoid';
 
 const NOTIFICATIONS = {
 	CREATED: 'Workflow successfully created',
@@ -18,7 +19,9 @@ test.describe('Workflows', () => {
 		await expect(n8n.canvas.getWorkflowTags()).toHaveText(['some-tag-1', 'some-tag-2']);
 	});
 
-	test('should create a new workflow using add workflow button', async ({ n8n }) => {
+	test('should create a new workflow using add workflow button and save successfully', async ({
+		n8n,
+	}) => {
 		await n8n.workflows.clickAddWorkflowButton();
 
 		const workflowName = `Test Workflow ${Date.now()}`;
@@ -31,9 +34,9 @@ test.describe('Workflows', () => {
 	});
 
 	test('should search for workflows', async ({ n8n }) => {
-		const date = Date.now();
-		const specificName = `Specific Test ${date}`;
-		const genericName = `Generic Test ${date}`;
+		const uniqueId = nanoid(8);
+		const specificName = `Specific Test ${uniqueId}`;
+		const genericName = `Generic Test ${uniqueId}`;
 
 		await n8n.workflowComposer.createWorkflow(specificName);
 		await n8n.goHome();
@@ -47,7 +50,7 @@ test.describe('Workflows', () => {
 
 		// Search with partial term
 		await n8n.workflows.clearSearch();
-		await n8n.workflows.searchWorkflows(date.toString());
+		await n8n.workflows.searchWorkflows(uniqueId);
 		await expect(n8n.workflows.getWorkflowItems()).toHaveCount(2);
 
 		// Search for non-existent

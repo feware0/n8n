@@ -5,7 +5,7 @@ test.describe('Schedule Trigger node', () => {
 		await n8n.goHome();
 	});
 
-	test('should execute and return the execution timestamp', async ({ n8n }) => {
+	test('should execute schedule trigger node and return timestamp in output', async ({ n8n }) => {
 		// Create a new workflow and add a Schedule Trigger node
 		await n8n.workflows.clickAddWorkflowButton();
 		await n8n.canvas.addNode('Schedule Trigger');
