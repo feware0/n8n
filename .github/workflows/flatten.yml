@@ -1,0 +1,30 @@
+name: Flatten Repo
+
+on:
+  workflow_dispatch:
+
+jobs:
+  flatten:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Remove node_modules folders
+        run: find . -name "node_modules" -type d -exec rm -rf {} +
+
+      - name: Move all files to root
+        run: |
+          mkdir output
+          find . -type f -not -path "./.git/*" -exec cp --parents {} output/ \;
+
+      - name: Create ZIP archive
+        run: |
+          cd output
+          zip -r ../flattened.zip .
+
+      - name: Upload ZIP
+        uses: actions/upload-artifact@v3
+        with:
+          name: flattened-repo
+          path: flattened.zip
