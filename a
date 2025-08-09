@@ -1,0 +1,56 @@
+name: Flatten repo to TXT (mobile)
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  flatten:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Build repo.txt (skip images/binaries, big files)
+        run: |
+          set -euo pipefail
+          git ls-files -z > files.zlist
+          : > repo.txt
+
+          # Hariç tutmak istediklerin:
+          EXCLUDE_REGEX='^(.github/|.gitignore$|CHANGELOG\.md$|docs/static/)'
+
+          while IFS= read -r -d '' f; do
+            [[ "$f" =~ $EXCLUDE_REGEX ]] && continue
+
+            # 1 MB'tan büyükleri atla
+            [[ -f "$f" ]] || continue
+            size=$(wc -c < "$f")
+            (( size >= 1048576 )) && continue
+
+            # Görsel/binary uzantıları atla
+            case "$f" in
+              *.png|*.jpg|*.jpeg|*.gif|*.webp|*.svg|*.ico|*.pdf|*.zip|*.mp4|*.mp3) continue ;;
+            esac
+
+            # Binary dosyaları atla
+            if ! grep -Iq . "$f"; then
+              continue
+            fi
+
+            printf '===== %s =====\n' "$f" >> repo.txt
+            sed -n '1,200000p' "$f" >> repo.txt
+            printf '\n\n' >> repo.txt
+          done < files.zlist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo.txt
+          path: repo.txt
+          retention-days: 7
+          if-no-files-found: error
