@@ -1,12 +1,33 @@
 import { test, expect } from '../../fixtures/base';
+import type { TestRequirements } from '../../Types';
+
+const telemetryDisabledRequirements: TestRequirements = {
+	storage: {
+		'n8n-telemetry': JSON.stringify({ enabled: false }),
+	},
+};
+
+const telemetryEnabledRequirements: TestRequirements = {
+	storage: {
+		'n8n-telemetry': JSON.stringify({ enabled: true }),
+		'n8n-instance-id': 'test-instance-id',
+	},
+	intercepts: {
+		iframeRequest: {
+			url: 'https://n8n.io/self-install*',
+			response: '<html><body>Test iframe content</body></html>',
+			contentType: 'text/html',
+		},
+	},
+};
 
 test.describe('n8n.io iframe', () => {
 	test.describe('when telemetry is disabled', () => {
-		test('should not load the iframe when visiting /home/workflows', async ({ n8n }) => {
-			// Override settings to disable telemetry
-			await n8n.page.addInitScript(() => {
-				window.localStorage.setItem('n8n-telemetry', JSON.stringify({ enabled: false }));
-			});
+		test('should not load the iframe when visiting /home/workflows', async ({
+			n8n,
+			setupRequirements,
+		}) => {
+			await setupRequirements(telemetryDisabledRequirements);
 
 			await n8n.page.goto('/');
 			await n8n.page.waitForLoadState();
@@ -17,23 +38,15 @@ test.describe('n8n.io iframe', () => {
 	});
 
 	test.describe('when telemetry is enabled', () => {
-		test('should load the iframe when visiting /home/workflows', async ({ n8n }) => {
+		test('should load the iframe when visiting /home/workflows', async ({
+			n8n,
+			setupRequirements,
+		}) => {
+			await setupRequirements(telemetryEnabledRequirements);
+
 			const testInstanceId = 'test-instance-id';
 			const testUserId = 'test-user-id';
-
-			// Override settings to enable telemetry
-			await n8n.page.addInitScript(
-				([testInstanceId]) => {
-					window.localStorage.setItem('n8n-telemetry', JSON.stringify({ enabled: true }));
-					window.localStorage.setItem('n8n-instance-id', testInstanceId);
-				},
-				[testInstanceId],
-			);
-
 			const iframeUrl = `https://n8n.io/self-install?instanceId=${testInstanceId}&userId=${testUserId}`;
-
-			// Intercept the iframe request
-			await n8n.iframe.interceptIframeRequest(iframeUrl);
 
 			await n8n.page.goto('/');
 			await n8n.page.waitForLoadState();

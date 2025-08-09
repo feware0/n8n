@@ -1,8 +1,27 @@
 import { test, expect } from '../../fixtures/base';
+import type { TestRequirements } from '../../Types';
+
+const ctaNotEligibleRequirements: TestRequirements = {
+	intercepts: {
+		becomeCreator: {
+			url: '**/rest/cta/become-creator',
+			response: false,
+		},
+	},
+};
+
+const ctaEligibleRequirements: TestRequirements = {
+	intercepts: {
+		becomeCreator: {
+			url: '**/rest/cta/become-creator',
+			response: true,
+		},
+	},
+};
 
 test.describe('Become creator CTA', () => {
-	test('should not show the CTA if user is not eligible', async ({ n8n }) => {
-		await n8n.becomeCreatorCTA.interceptCtaRequestWithResponse(false);
+	test('should not show the CTA if user is not eligible', async ({ n8n, setupRequirements }) => {
+		await setupRequirements(ctaNotEligibleRequirements);
 		await n8n.page.goto('/');
 		await n8n.page.waitForLoadState();
 
@@ -13,8 +32,8 @@ test.describe('Become creator CTA', () => {
 		await expect(n8n.becomeCreatorCTA.getBecomeTemplateCreatorCta()).toBeHidden();
 	});
 
-	test('should show the CTA if the user is eligible', async ({ n8n }) => {
-		await n8n.becomeCreatorCTA.interceptCtaRequestWithResponse(true);
+	test('should show the CTA if the user is eligible', async ({ n8n, setupRequirements }) => {
+		await setupRequirements(ctaEligibleRequirements);
 		await n8n.page.goto('/');
 		await n8n.page.waitForLoadState();
 

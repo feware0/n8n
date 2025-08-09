@@ -9,7 +9,9 @@ import { WorkflowsPage } from '../pages/workflows';
 
 const workflowsPage = new WorkflowsPage();
 
-describe('Versions', () => {
+// Migrated to Playwright
+// eslint-disable-next-line n8n-local-rules/no-skipped-tests
+describe.skip('Versions', () => {
 	it('should open updates panel', () => {
 		cy.overrideSettings({
 			releaseChannel: 'stable',

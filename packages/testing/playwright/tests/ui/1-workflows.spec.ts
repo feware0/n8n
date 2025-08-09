@@ -1,5 +1,6 @@
-import { test, expect } from '../../fixtures/base';
 import { nanoid } from 'nanoid';
+
+import { test, expect } from '../../fixtures/base';
 
 const NOTIFICATIONS = {
 	CREATED: 'Workflow successfully created',

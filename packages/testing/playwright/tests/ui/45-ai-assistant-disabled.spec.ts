@@ -1,30 +1,124 @@
-import { nanoid } from 'nanoid';
-
 import { test, expect } from '../../fixtures/base';
+import type { TestRequirements } from '../../Types';
+
+// Requirements for different test scenarios
+const aiDisabledRequirements: TestRequirements = {
+	config: {
+		features: { aiAssistant: false },
+	},
+};
+
+const aiEnabledRequirements: TestRequirements = {
+	config: {
+		features: { aiAssistant: true },
+	},
+};
+
+const aiEnabledWithWorkflowRequirements: TestRequirements = {
+	config: {
+		features: { aiAssistant: true },
+	},
+	workflow: {
+		'ai_assistant_test_workflow.json': 'AI_Assistant_Test_Workflow',
+	},
+	intercepts: {
+		aiChat: {
+			url: '**/rest/ai/chat',
+			response: {
+				sessionId: '1',
+				messages: [
+					{
+						role: 'assistant',
+						type: 'message',
+						text: 'Hey, this is an assistant message',
+					},
+				],
+			},
+		},
+	},
+};
+
+const aiEnabledWithQuickRepliesRequirements: TestRequirements = {
+	config: {
+		features: { aiAssistant: true },
+	},
+	workflow: {
+		'ai_assistant_test_workflow.json': 'AI_Assistant_Test_Workflow',
+	},
+	intercepts: {
+		aiChat: {
+			url: '**/rest/ai/chat',
+			response: {
+				sessionId: '1',
+				messages: [
+					{
+						role: 'assistant',
+						type: 'message',
+						text: 'Hey, this is an assistant message',
+						quickReplies: [
+							{
+								text: "Sure, let's do it",
+								type: 'yes',
+							},
+							{
+								text: "Nah, doesn't sound good",
+								type: 'no',
+							},
+						],
+					},
+				],
+			},
+		},
+	},
+};
+
+const aiEnabledWithEndSessionRequirements: TestRequirements = {
+	config: {
+		features: { aiAssistant: true },
+	},
+	workflow: {
+		'ai_assistant_test_workflow.json': 'AI_Assistant_Test_Workflow',
+	},
+	intercepts: {
+		aiChat: {
+			url: '**/rest/ai/chat',
+			response: {
+				sessionId: '1',
+				messages: [
+					{
+						role: 'assistant',
+						type: 'message',
+						title: 'Glad to Help',
+						text: "I'm glad I could help. If you have any more questions or need further assistance with your n8n workflows, feel free to ask!",
+					},
+					{
+						role: 'assistant',
+						type: 'event',
+						eventName: 'end-session',
+					},
+				],
+			},
+		},
+	},
+};
 
 test.describe('AI Assistant::disabled', () => {
-	test.beforeEach(async ({ n8n, api }) => {
-		await api.disableFeature('aiAssistant');
-		await n8n.goHome();
-	});
+	test('does not show assistant button if feature is disabled', async ({
+		n8n,
+		setupRequirements,
+	}) => {
+		await setupRequirements(aiDisabledRequirements);
 
-	test('does not show assistant button if feature is disabled', async ({ n8n }) => {
 		// When AI Assistant feature is disabled, the floating button should not exist
 		await expect(n8n.aiAssistant.getAskAssistantFloatingButton()).toHaveCount(0);
 	});
 });
 
 test.describe('AI Assistant::enabled', () => {
-	test.beforeEach(async ({ n8n, api }) => {
-		await api.enableFeature('aiAssistant');
+	test('renders placeholder UI', async ({ n8n, setupRequirements }) => {
+		await setupRequirements(aiEnabledRequirements);
 		await n8n.page.goto('/workflow/new');
-	});
 
-	test.afterEach(async ({ api }) => {
-		await api.disableFeature('aiAssistant');
-	});
-
-	test('renders placeholder UI', async ({ n8n }) => {
 		// Check that the assistant button is visible
 		await expect(n8n.aiAssistant.getAskAssistantCanvasActionButton()).toBeVisible();
 
@@ -53,7 +147,10 @@ test.describe('AI Assistant::enabled', () => {
 		await expect(n8n.aiAssistant.getAskAssistantChat()).toBeHidden();
 	});
 
-	test('should show resizer when chat is open', async ({ n8n }) => {
+	test('should show resizer when chat is open', async ({ n8n, setupRequirements }) => {
+		await setupRequirements(aiEnabledRequirements);
+		await n8n.page.goto('/workflow/new');
+
 		// Click the assistant button to open chat
 		await n8n.aiAssistant.getAskAssistantCanvasActionButton().click();
 
@@ -70,28 +167,8 @@ test.describe('AI Assistant::enabled', () => {
 		await n8n.aiAssistant.getCloseChatButton().click();
 	});
 
-	test('should start chat session from node error view', async ({ n8n, page }) => {
-		// Set up API interception for AI chat before any actions
-		await page.route('**/rest/ai/chat', async (route) => {
-			await route.fulfill({
-				status: 200,
-				contentType: 'application/json',
-				body: JSON.stringify({
-					sessionId: '1',
-					messages: [
-						{
-							role: 'assistant',
-							type: 'message',
-							text: 'Hey, this is an assistant message',
-						},
-					],
-				}),
-			});
-		});
-
-		// Import the test workflow with unique name
-		const workflowName = `AI_Assistant_Test_Workflow_${nanoid(8)}`;
-		await n8n.canvas.importWorkflow('ai_assistant_test_workflow.json', workflowName);
+	test('should start chat session from node error view', async ({ n8n, setupRequirements }) => {
+		await setupRequirements(aiEnabledWithWorkflowRequirements);
 
 		// Open the 'Stop and Error' node
 		await n8n.canvas.openNode('Stop and Error');
@@ -121,28 +198,8 @@ test.describe('AI Assistant::enabled', () => {
 		await expect(n8n.aiAssistant.getNodeErrorViewAssistantButton()).toBeDisabled();
 	});
 
-	test('should render chat input correctly', async ({ n8n, page }) => {
-		// Set up API interception for AI chat
-		await page.route('**/rest/ai/chat', async (route) => {
-			await route.fulfill({
-				status: 200,
-				contentType: 'application/json',
-				body: JSON.stringify({
-					sessionId: '1',
-					messages: [
-						{
-							role: 'assistant',
-							type: 'message',
-							text: 'Hey, this is an assistant message',
-						},
-					],
-				}),
-			});
-		});
-
-		// Import the test workflow with unique name
-		const workflowName = `AI_Assistant_Test_Workflow_${nanoid(8)}`;
-		await n8n.canvas.importWorkflow('ai_assistant_test_workflow.json', workflowName);
+	test('should render chat input correctly', async ({ n8n, setupRequirements }) => {
+		await setupRequirements(aiEnabledWithWorkflowRequirements);
 
 		// Click the canvas assistant button to open chat (simpler approach)
 		await n8n.aiAssistant.getAskAssistantCanvasActionButton().click();
@@ -176,38 +233,8 @@ test.describe('AI Assistant::enabled', () => {
 		await expect(n8n.aiAssistant.getChatInput()).toHaveValue('');
 	});
 
-	test('should render and handle quick replies', async ({ n8n, page }) => {
-		// Set up API interception for AI chat with quick replies
-		await page.route('**/rest/ai/chat', async (route) => {
-			await route.fulfill({
-				status: 200,
-				contentType: 'application/json',
-				body: JSON.stringify({
-					sessionId: '1',
-					messages: [
-						{
-							role: 'assistant',
-							type: 'message',
-							text: 'Hey, this is an assistant message',
-							quickReplies: [
-								{
-									text: "Sure, let's do it",
-									type: 'yes',
-								},
-								{
-									text: "Nah, doesn't sound good",
-									type: 'no',
-								},
-							],
-						},
-					],
-				}),
-			});
-		});
-
-		// Import the test workflow with unique name
-		const workflowName = `AI_Assistant_Test_Workflow_${nanoid(8)}`;
-		await n8n.canvas.importWorkflow('ai_assistant_test_workflow.json', workflowName);
+	test('should render and handle quick replies', async ({ n8n, setupRequirements }) => {
+		await setupRequirements(aiEnabledWithQuickRepliesRequirements);
 
 		// Open the 'Stop and Error' node
 		await n8n.canvas.openNode('Stop and Error');
@@ -237,28 +264,8 @@ test.describe('AI Assistant::enabled', () => {
 		await expect(n8n.aiAssistant.getChatMessagesUser().first()).toContainText("Sure, let's do it");
 	});
 
-	test('should warn before starting a new session', async ({ n8n, page }) => {
-		// Set up API interception for AI chat
-		await page.route('**/rest/ai/chat', async (route) => {
-			await route.fulfill({
-				status: 200,
-				contentType: 'application/json',
-				body: JSON.stringify({
-					sessionId: '1',
-					messages: [
-						{
-							role: 'assistant',
-							type: 'message',
-							text: 'Hey, this is an assistant message',
-						},
-					],
-				}),
-			});
-		});
-
-		// Import the test workflow with unique name
-		const workflowName = `AI_Assistant_Test_Workflow_${nanoid(8)}`;
-		await n8n.canvas.importWorkflow('ai_assistant_test_workflow.json', workflowName);
+	test('should warn before starting a new session', async ({ n8n, setupRequirements }) => {
+		await setupRequirements(aiEnabledWithWorkflowRequirements);
 
 		// Open the 'Edit Fields' node first
 		await n8n.canvas.openNode('Edit Fields');
@@ -303,34 +310,11 @@ test.describe('AI Assistant::enabled', () => {
 		await expect(n8n.aiAssistant.getChatMessagesAll()).toHaveCount(1);
 	});
 
-	test('should end chat session when `end_session` event is received', async ({ n8n, page }) => {
-		// Set up API interception for AI chat with end session
-		await page.route('**/rest/ai/chat', async (route) => {
-			await route.fulfill({
-				status: 200,
-				contentType: 'application/json',
-				body: JSON.stringify({
-					sessionId: '1',
-					messages: [
-						{
-							role: 'assistant',
-							type: 'message',
-							title: 'Glad to Help',
-							text: "I'm glad I could help. If you have any more questions or need further assistance with your n8n workflows, feel free to ask!",
-						},
-						{
-							role: 'assistant',
-							type: 'event',
-							eventName: 'end-session',
-						},
-					],
-				}),
-			});
-		});
-
-		// Import the test workflow with unique name
-		const workflowName = `AI_Assistant_Test_Workflow_${nanoid(8)}`;
-		await n8n.canvas.importWorkflow('ai_assistant_test_workflow.json', workflowName);
+	test('should end chat session when `end_session` event is received', async ({
+		n8n,
+		setupRequirements,
+	}) => {
+		await setupRequirements(aiEnabledWithEndSessionRequirements);
 
 		// Open the 'Stop and Error' node
 		await n8n.canvas.openNode('Stop and Error');

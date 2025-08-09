@@ -1,15 +1,19 @@
 import { test, expect } from '../../fixtures/base';
+import type { TestRequirements } from '../../Types';
+
+const requirements: TestRequirements = {
+	workflow: {
+		'Test_9999_SUG_38.json': 'SUG_38_Test_Workflow',
+	},
+};
 
 test.describe('SUG-38 Inline expression previews are not displayed in NDV', () => {
 	test("should show resolved inline expression preview in NDV if the node's input data is populated", async ({
 		n8n,
+		setupRequirements,
 	}) => {
-		// Start from home page and create new workflow
-		await n8n.goHome();
-		await n8n.workflows.clickAddWorkflowButton();
-
-		// Import the workflow from fixture
-		await n8n.canvas.importWorkflow('Test_9999_SUG_38.json', 'SUG_38_Test_Workflow');
+		// Setup requirements - imports workflow and navigates to canvas
+		await setupRequirements(requirements);
 
 		// Click zoom to fit
 		await n8n.canvas.clickZoomToFitButton();

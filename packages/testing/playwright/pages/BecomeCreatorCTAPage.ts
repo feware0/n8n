@@ -14,14 +14,4 @@ export class BecomeCreatorCTAPage extends BasePage {
 	async closeBecomeTemplateCreatorCta() {
 		await this.getCloseBecomeTemplateCreatorCtaButton().click();
 	}
-
-	// API interception helper
-	async interceptCtaRequestWithResponse(becomeCreator: boolean) {
-		await this.page.route('**/rest/cta/become-creator', (route) => {
-			void route.fulfill({
-				status: 200,
-				body: JSON.stringify(becomeCreator),
-			});
-		});
-	}
 }
